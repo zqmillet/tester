@@ -8,7 +8,7 @@ class MetaClass(type):
     """
 
     def __prepare__(self, *args, **kwargs):
-        pass
+        return dict()
 
     def __init__(cls, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -21,5 +21,5 @@ class MetaClass(type):
         if not os.path.isfile(main_file_path):
             return
 
-        if not has_teststep(cls):
-            return
+        # if not has_teststep(cls):
+        #     return

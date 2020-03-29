@@ -3,7 +3,7 @@ import textwrap
 import colorama
 
 class ArgumentParser(argparse.ArgumentParser):
-    def __init__(self, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
         super().__init__(
             *args,
             formatter_class = argparse.RawTextHelpFormatter,
@@ -33,7 +33,7 @@ class ArgumentParser(argparse.ArgumentParser):
                 '\n' + '\n'.join(comment_list) + colorama.Fore.RESET
 
             kwargs['help'] = '\n'.join(
-                sum([textwrap.wrap(line) for line in kwargs['help'].splitlines()], list()) + comment
-            )
+                sum([textwrap.wrap(line) for line in kwargs['help'].splitlines()], list())
+            ) + comment
 
         super().add_argument(*args, **kwargs) 
