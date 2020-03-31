@@ -23,10 +23,20 @@ def main():
         help = 'get the version of tester'
     )
 
+    testsuite_parser = subparsers.add_parser(
+        COMMANDS.TESTSUITE,
+        help = 'execute the testsuite'
+    )
+
     arguments = argument_parser.parse_args(sys.argv[1:])
 
     if arguments.command == COMMANDS.VERSION:
         print(version)
+    elif arguments.command == COMMANDS.TESTSUITE:
+        execute_testsuite(arguments = arguments)
+
+def execute_testsuite(arguments):
+    pass
 
 if __name__ == '__main__':
     main()
