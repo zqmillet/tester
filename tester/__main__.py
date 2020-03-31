@@ -11,7 +11,7 @@ class COMMANDS:
     MANUAL = 'manual'
 
 def main():
-    argument_parser = ArgumentParser()
+    argument_parser = ArgumentParser(prog = 'tester')
 
     subparsers = argument_parser.add_subparsers(
         help = 'tester commands help',
@@ -34,6 +34,8 @@ def main():
         print(version)
     elif arguments.command == COMMANDS.TESTSUITE:
         execute_testsuite(arguments = arguments)
+    else:
+        argument_parser.print_help()
 
 def execute_testsuite(arguments):
     pass

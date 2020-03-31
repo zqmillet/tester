@@ -8,3 +8,13 @@ class Demonstration(BaseTestCase):
         - 无
         
     """
+
+    def setup(self):
+        pass
+
+    @teststep
+    def step(self):
+        pass
+
+    def teardown(self):
+        pass
