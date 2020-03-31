@@ -1,0 +1,49 @@
+type: dict
+description: 测试用例的文本用例
+properties:
+    author:
+        type: str
+        description: 测试用例的作者
+        required: true
+    description:
+        type: str
+        description: 测试用例的描述信息
+        required: true
+    preconditions:
+        type: list
+        description: 测试用例的预置条件
+        required: true
+        items:
+            type: str
+            description: 测试用例的预置条件描述
+    steps:
+        type: list
+        description: 测试用例的测试步骤
+        required: true
+        items:
+            type: str
+            description: 测试用例的测试步骤描述
+    results:
+        type: list
+        description: 测试用例的预期结果
+        required: true
+        items:
+            type: str
+            description: 测试用例的期望结果描述
+    tags:
+        type: list
+        description: 测试用例的标签集合
+        required: false
+        items:
+            type: str
+            description: 测试用例的标签
+    status:
+        type: str
+        description: 测试用例的状态
+        required: true
+        enumeration:
+            - disable
+            - enable
+            - deprecate
+            - repair
+            - design
