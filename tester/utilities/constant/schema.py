@@ -5,4 +5,5 @@ class SCHEMA_KEY:
     REQUIRED = 'required'
     ENUMERATION = 'enumeration'
     ASSERTION = 'assertion'
+    ASSERTION_FUNCTION = '_assertion'
     DESCRIPTION = 'description'
