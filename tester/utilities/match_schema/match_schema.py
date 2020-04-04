@@ -75,3 +75,6 @@ def __get_types(schema):
         else:
             _types.append(eval(_type))
     return tuple(_types)
+
+def match_schema(value, schema, parents = None, name = 'variable'):
+    pass
