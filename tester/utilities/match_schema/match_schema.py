@@ -16,12 +16,12 @@ def __instantiate_assertion(schema):
 
     if type_name == dict.__name__:
         for property_name in schema.get(SCHEMA_KEY.PROPERTIES, dict()):
-            schema[SCHEMA_KEY.PROPERTIES][property_name] = __instantiate_assertion(
+            __instantiate_assertion(
                 schema = schema[SCHEMA_KEY.PROPERTIES][property_name]
             )
     elif type_name == list.__name__:
         if SCHEMA_KEY.ITEMS in schema:
-            schema[SCHEMA_KEY.ITEMS] = __instantiate_assertion(
+            __instantiate_assertion(
                 schema = schema[SCHEMA_KEY.ITEMS]
             )
 
@@ -76,5 +76,36 @@ def __get_types(schema):
             _types.append(eval(_type))
     return tuple(_types)
 
-def match_schema(value, schema, parents = None, name = 'variable'):
+def __match_schema(data, schema, parents, name):
     pass
+
+def match_schema(data, schema, parents = None, name = 'variable'):
+    if parents is None:
+        parents = list()
+
+    schema = yaml.load(schema, Loader = yaml.SafeLoader)
+
+    print(id(schema))
+    __instantiate_assertion(schema)
+    print(schema)
+    return __match_schema(data = data, schema = schema, parents = parents, name = name)  
+
+if __name__ == '__main__':
+    schema = '''
+    type: dict
+    properties:
+        name:
+            type: str
+        ags:
+            type:
+                - int
+                - float
+            assertion: "lambda x: 10 < x < 30"
+    '''
+
+    data = dict(
+        name = 'qiqi',
+        age = '2333'
+    )
+
+    exception = match_schema(data = data, schema = schema)
