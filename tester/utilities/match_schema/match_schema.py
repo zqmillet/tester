@@ -9,6 +9,33 @@ from tester.utilities.exception import AssertionException
 from tester.utilities.exception import EnumerationException
 
 def __instantiate_assertion(schema):
+    '''
+    description: 这个函数用来实例化 schema 中的 assertion 字段.
+    arguments:
+        schema:
+            type: dict
+            description: 数据定义 schema.
+            properties:
+                type:
+                    type: str
+                    description: 数据的类型.
+                    required: true
+                properties:
+                    type: dict
+                    description: 如果数据类型是字典, 则该字段是字段的描述.
+                    required: false
+                items:
+                    type: dict
+                    description: 如果数据类型是列表, 则该字段是元素的描述.
+                    required: false
+                assertion:
+                    type: str
+                    description: 数据类型的断言表达式.
+                    required: false
+    return:
+        type: type(None)
+    '''
+
     if not schema:
         return schema
 
@@ -27,6 +54,10 @@ def __instantiate_assertion(schema):
         schema[SCHEMA_KEY.ASSERTION_FUNCTION] = get_object_from_expression(assertion_expression)
 
 def __instantiate_type(schema):
+    '''
+    description: 这个函数用来实例化 schema 中的 type 字段.
+    '''
+
     if not schema:
         return schema
 
@@ -66,6 +97,36 @@ def __test_enumeration(value, name, enumeration, parents):
     )
     
 def __get_types(schema):
+    '''
+    description: 这个函数是用来将 schema 的 type 字段, 由 str 类型实例化成 tuple 类型. 便于以后的运算.
+    arguments:
+        schema:
+            type: dict
+            description: 数据定义 schema.
+            properties:
+                type:
+                    type:
+                        - str
+                        - list
+                    description: 数据定义 schema 的 type 字段, 本身是一段 python 代码.
+                    required: true
+                    items:
+                        type: str
+                    examples:
+                        - str
+                        - int
+                        - type(None)
+                        - any
+                        - testet.utilities.argumet_parser:ArgumentParser
+                        - - int
+                          - float
+    return:
+        type: tuple
+        description: 返回数据类型构成的一个元组.
+        items:
+            type: type
+    author: qiqi
+    '''
     types = schema[SCHEMA_KEY.TYPE]
 
     if not isinstance(types, list):
@@ -73,8 +134,8 @@ def __get_types(schema):
 
     _types = list()
     for _type in types:
-        if '.' in _type:
-            package, name = _type.rsplit('.', 1)
+        if ':' in _type:
+            package, name = _type.rsplit(':', 1)
             _types.append(
                 get_object_from_expression(
                     'from {package} import {name}; {name}'.format(
