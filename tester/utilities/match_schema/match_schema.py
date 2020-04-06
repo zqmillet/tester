@@ -16,18 +16,31 @@ def __instantiate_assertion(schema):
 
     if type_name == dict.__name__:
         for property_name in schema.get(SCHEMA_KEY.PROPERTIES, dict()):
-            __instantiate_assertion(
-                schema = schema[SCHEMA_KEY.PROPERTIES][property_name]
-            )
+            __instantiate_assertion(schema = schema[SCHEMA_KEY.PROPERTIES][property_name])
+
     elif type_name == list.__name__:
         if SCHEMA_KEY.ITEMS in schema:
-            __instantiate_assertion(
-                schema = schema[SCHEMA_KEY.ITEMS]
-            )
+            __instantiate_assertion(schema = schema[SCHEMA_KEY.ITEMS])
 
     if SCHEMA_KEY.ASSERTION in schema:
         assertion_expression = schema[SCHEMA_KEY.ASSERTION]
         schema[SCHEMA_KEY.ASSERTION_FUNCTION] = get_object_from_expression(assertion_expression)
+
+def __instantiate_type(schema):
+    if not schema:
+        return schema
+
+    type_name = schema[SCHEMA_KEY.TYPE]
+
+    if type_name == dict.__name__:
+        for property_name in schema.get(SCHEMA_KEY.PROPERTIES, dict()):
+            __instantiate_type(schema = schema[SCHEMA_KEY.PROPERTIES][property_name])
+
+    elif type_name == list.__name__:
+        if SCHEMA_KEY.ITEMS in schema:
+            __instantiate_type(schema = schema[SCHEMA_KEY.ITEMS])
+
+    schema[SCHEMA_KEY.TYPE] = __get_types(schema)
 
 def __get_name(name, parents):
     return name + ''.join(['[' + repr(item) + ']' for item in parents])
@@ -85,9 +98,9 @@ def match_schema(data, schema, parents = None, name = 'variable'):
 
     schema = yaml.load(schema, Loader = yaml.SafeLoader)
 
-    print(id(schema))
     __instantiate_assertion(schema)
-    print(schema)
+    __instantiate_type(schema)
+    import pdb; pdb.set_trace()
     return __match_schema(data = data, schema = schema, parents = parents, name = name)  
 
 if __name__ == '__main__':
