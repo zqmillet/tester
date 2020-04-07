@@ -7,10 +7,11 @@ from tester.utilities.constant import SCHEMA_KEY
 from tester.utilities.common import get_object_from_expression
 from tester.utilities.exception import AssertionException
 from tester.utilities.exception import EnumerationException
+from tester.utilities.exception import TypeMismatchException
 
 def __instantiate_assertion(schema):
     '''
-    description: 这个函数用来实例化 schema 中的 assertion 字段.
+    description: 这个函数用来实例化 schema 中的 assertion 字段. 该函数会对 schema 数据进行递归遍历.
     arguments:
         schema:
             type: dict
@@ -34,6 +35,7 @@ def __instantiate_assertion(schema):
                     required: false
     return:
         type: type(None)
+        description: 本函数无返回值, 而是直接修改 schema 的内容.
     '''
 
     if not schema:
@@ -55,7 +57,27 @@ def __instantiate_assertion(schema):
 
 def __instantiate_type(schema):
     '''
-    description: 这个函数用来实例化 schema 中的 type 字段.
+    description: 这个函数用来实例化 schema 中的 type 字段. 该函数会对 schema 数据进行递归遍历.
+    arguments:
+        schema:
+            type: dict
+            description: 数据定义 schema.
+            properties:
+                type:
+                    type: str
+                    description: 数据的类型.
+                    required: true
+                properties:
+                    type: dict
+                    description: 如果数据类型是字典, 则该字段是字段的描述.
+                    required: false
+                items:
+                    type: dict
+                    description: 如果数据类型是列表, 则该字段是元素的描述.
+                    required: false
+    return:
+        type: type(None)
+        description: 本函数无返回值, 而是直接修改 schema 的内容.
     '''
 
     if not schema:
@@ -76,23 +98,23 @@ def __instantiate_type(schema):
 def __get_name(name, parents):
     return name + ''.join(['[' + repr(item) + ']' for item in parents])
 
-def __test_assertion(value, name, assertion, assertion_expression, parents):
-    if assertion(value):
+def __test_assertion(data, name, assertion, assertion_expression, parents):
+    if assertion is None or assertion(data):
         return None
 
     return AssertionException(
         name = __get_name(name = name, parents = parents),
-        value = repr(value),
+        data = repr(data),
         assertion_expression = assertion_expression 
     )
 
-def __test_enumeration(value, name, enumeration, parents):
-    if value in enumeration:
+def __test_enumeration(data, name, enumeration, parents):
+    if enumeration is None or data in enumeration:
         return None
 
     return EnumerationException(
         name = __get_name(name = name, parents = parents),
-        value = repr(value),
+        data = repr(data),
         enumeration = enumeration
     )
     
@@ -151,22 +173,52 @@ def __get_types(schema):
     return tuple(_types)
 
 def __match_schema(data, schema, parents, name):
-    pass
+    expected_types = schema[SCHEMA_KEY.TYPE]
 
-def match_schema(data, schema, parents = None, name = 'variable'):
-    if parents is None:
-        parents = list()
+    if not isinstance(data, expected_types):
+        return TypeMismatchException(
+            name = name,
+            real_type = type(data),
+            expected_types = expected_types
+        )
 
+    exception = __test_enumeration(
+        name = name,
+        parents = parents,
+        enumeration = schema.get(SCHEMA_KEY.ENUMERATION, None),
+        data = data
+    )
+    if exception: return exception
+
+    exception = __test_assertion(
+        data = data,
+        name = name,
+        assertion = schema.get(SCHEMA_KEY.ASSERTION_FUNCTION, None),
+        assertion_expression = schema.get(SCHEMA_KEY.ASSERTION, None),
+        parents = parents
+    )
+    if exception: return exception
+
+    if isinstance(data, dict):
+        if SCHEMA_KEY.PROPERTIES not in schema:
+            return None
+
+        for property_name, property_schema in schema[SCHEMA_KEY.PROPERTIES].items():
+            if property_schema.get(SCHEMA_KEY.REQUIRED, True) and property_name not in data:
+                return Miss
+
+def match_schema(data, schema, name = 'variable'):
     schema = yaml.load(schema, Loader = yaml.SafeLoader)
 
     __instantiate_assertion(schema)
     __instantiate_type(schema)
-    import pdb; pdb.set_trace()
-    return __match_schema(data = data, schema = schema, parents = parents, name = name)  
+    return __match_schema(data = data, schema = schema, parents = list(), name = name)  
 
 if __name__ == '__main__':
     schema = '''
-    type: dict
+    type:
+        - dict
+        - list
     properties:
         name:
             type: str
@@ -183,3 +235,4 @@ if __name__ == '__main__':
     )
 
     exception = match_schema(data = data, schema = schema)
+    print(exception)

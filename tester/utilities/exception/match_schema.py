@@ -17,3 +17,13 @@ class EnumerationException(Exception):
                 enumeration = enumeration
             )    
         )
+
+class TypeMismatchException(Exception):
+    def __init__(self, name, real_type, expected_types):
+        super().__init__(
+            'the type of {name} should be {expected_types}, but it was {real_type}'.format(
+                name = name,
+                real_type = real_type,
+                expected_types = expected_types
+            )
+        )
